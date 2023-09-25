@@ -13,6 +13,9 @@ const port = process.env.PORT || 5050;
 connectDB();
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use("/api/users", userRoutes);
 
 app.use(notFound);
@@ -20,4 +23,4 @@ app.use(errorHandler);
 
 app.get("/", (req, res) => res.send("Server ready"));
 
-app.listen(port, () => `Server running on port ${port}`);
+app.listen(port, () => console.log(`Server running on port ${port}`));
