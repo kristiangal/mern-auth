@@ -1,16 +1,18 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
+import matchPasswords from "../utils/matchPasswords.js";
 
 // * ASYNC HANDLER - nemusi sa pouzivat v async funkciach try/catch, vyriesi to error handling za nas + pomocou error handling middlewaru
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
-    res.status(201).json({
+
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -61,7 +63,12 @@ route POST /api/users/logout
 @access Private
 */
 const logoutUser = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "logout user" });
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
+  res.status(200).json({ message: "User logged out" });
 });
 
 /* 
@@ -70,7 +77,12 @@ route GET /api/users/profile
 @access Private
 */
 const getUserProfile = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "User profile" });
+  const user = {
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+  };
+  res.status(200).json(user);
 });
 
 /* 
