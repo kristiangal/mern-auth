@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setCredentials } from "../features/authSlice.js";
+import { useLoginMutation } from "../features/userApiSlice.js";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import FormConainer from "../components/FormContainer.jsx";
 
@@ -7,9 +10,26 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [login, { isLoading }] = useLoginMutation();
+
+  const { userInfo } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (userInfo) {
+      navigate("/");
+    }
+  }, [navigate, userInfo]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log(email, password);
+    try {
+      const res = await login({ email, password }).unwrap();
+      dispatch(setCredentials(...res));
+      navigate("/");
+    } catch (error) {}
   };
 
   return (
